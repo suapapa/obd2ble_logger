@@ -1,6 +1,11 @@
 package main
 
-func getSupportedPids(val []byte) []byte {
+const (
+	OBD2Svc01EngineSpeed  = 0x0C
+	OBD2Svc01VehicleSpeed = 0x0D
+)
+
+func parseVal2SupportedPids(val []byte) []byte {
 	var pids []byte
 
 	currPid := byte(0x01)
