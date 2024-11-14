@@ -103,7 +103,7 @@ func main() {
 	}
 }
 
-func writeCmd(command string, respStrm *RespStream) {
+func writeCmd(command string, respStrm *RespStream) *Value {
 	log.Printf("Writing command: %s", command)
 	// cmd := []byte(command)
 	cmd := append([]byte(command), '\r')
@@ -121,8 +121,11 @@ func writeCmd(command string, respStrm *RespStream) {
 			log.Println("> " + l)
 			if v, ok := ParseLine2Value(l); ok {
 				log.Printf("# OBD resp PID: %x, DATA: %x", v.Pid, v.Data)
+				return v
 			}
 		}
+		return nil
 	}
-
+	log.Println("timeout")
+	return nil
 }
