@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"os"
 	"os/signal"
@@ -12,12 +13,6 @@ import (
 	"github.com/go-ble/ble/examples/lib/dev"
 )
 
-type Report struct {
-	UTC          int64   `json:"utc"`
-	EngineSpeed  float64 `json:"engine_speed"`
-	VehicleSpeed int     `json:"vehicle_speed"`
-}
-
 func main() {
 	// Initialize BLE device
 	d, err := dev.NewDevice("default")
@@ -26,7 +21,7 @@ func main() {
 	}
 	ble.SetDefaultDevice(d)
 
-	elm327ble, err := NewELM327BLE(true)
+	elm327ble, err := NewELM327BLE(false)
 	if err != nil {
 		log.Fatalf("Failed to create ELM327BLE: %v", err)
 	}
@@ -51,18 +46,14 @@ func main() {
 				continue
 			}
 
-			var r Report
-			r.UTC = time.Now().UnixMilli()
+			// var r Report
+			r := make(map[string]interface{})
+			r["utc"] = time.Now().UnixMilli()
 			for _, v := range vs {
-				switch v.Pid {
-				case OBD2Svc01EngineSpeed:
-					r.EngineSpeed = float64(256*int(v.Data[0])+int(v.Data[1])) / 4
-				case OBD2Svc01VehicleSpeed:
-					r.VehicleSpeed = int(v.Data[0])
-				}
+				r[v.PidString()] = v.String()
 			}
-			jsonStr, _ := json.Marshal(r)
-			log.Printf("%s", jsonStr)
+			jsonBytes, _ := json.Marshal(r)
+			fmt.Println(string(jsonBytes))
 		}
 	}
 }

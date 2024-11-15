@@ -161,9 +161,11 @@ func (e *ELM327BLE) init() error {
 		// "01 00",
 	}
 	for _, cmd := range commands {
-		if _, err := e.sendCmd(cmd); err != nil {
-			return errors.Wrap(err, "failed to init")
-		}
+		e.sendCmd(cmd)
+		// if _, err := e.sendCmd(cmd); err != nil {
+		// 	return errors.Wrap(err, "failed to init")
+		// }
+		e.sendCmd(cmd)
 	}
 	return nil
 }
@@ -184,7 +186,7 @@ func (e *ELM327BLE) sendCmd(command string) (*Value, error) {
 		break
 	case lines := <-e.respStrm.LinesCh:
 		for _, l := range lines {
-			log.Println("> " + l)
+			e.debug("> " + l)
 			if v, ok := ParseLine2Value(l); ok {
 				// log.Printf("# OBD resp PID: %x, DATA: %x", v.Pid, v.Data)
 				cs := strings.Split(command, " ")
