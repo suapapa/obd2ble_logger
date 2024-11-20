@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -14,6 +15,12 @@ import (
 )
 
 func main() {
+	var debug bool
+	var dumpFile string
+
+	flag.BoolVar(&debug, "d", false, "enable debug print")
+	flag.StringVar(&dumpFile, "f", "", "write log to file")
+
 	// Initialize BLE device
 	d, err := dev.NewDevice("default")
 	if err != nil {
@@ -21,7 +28,7 @@ func main() {
 	}
 	ble.SetDefaultDevice(d)
 
-	elm327ble, err := NewELM327BLE(false)
+	elm327ble, err := NewELM327BLE(debug)
 	if err != nil {
 		log.Fatalf("Failed to create ELM327BLE: %v", err)
 	}
@@ -33,6 +40,16 @@ func main() {
 
 	tk := time.NewTicker(500 * time.Millisecond)
 	defer tk.Stop()
+
+	var f *os.File
+	if dumpFile != "" {
+		f, err = os.Create(dumpFile)
+		if err != nil {
+			log.Fatalf("fail to create dumpfile: %v", err)
+		}
+		defer f.Close()
+	}
+
 	for {
 		select {
 		case <-sigs:
@@ -53,6 +70,11 @@ func main() {
 				r[v.PidString()] = v.String()
 			}
 			jsonBytes, _ := json.Marshal(r)
+			if f != nil {
+				f.Write(jsonBytes)
+				f.Write([]byte{'\n'})
+				f.Sync()
+			}
 			fmt.Println(string(jsonBytes))
 		}
 	}

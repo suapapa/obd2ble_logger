@@ -1,7 +1,7 @@
 # OBD2BLE logger
 
 Logging vehicle speed and engine speed (RPM) via OBD2 BLE dongle.
-The dongle is iCar Pro ELM327 BT 4.0 which bought from Aliexpress.
+The dongle is iCar Pro ELM327 BT 4.0 which bought from Alliexpress.
 
 Here is demo video:
 
